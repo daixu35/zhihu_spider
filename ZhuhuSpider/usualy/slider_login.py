@@ -27,9 +27,9 @@ class SliderMove(object):
 
     def get_distance(self, bg_img_url):
         """
-        如果识别成功，返回识别状态和缺口左边界距离
+        如果识别成功，返回识别状态True和缺口左边界距离；否则返回False和一个空字符串
         :param bg_img_url: 滑动验证码背景图片url
-        :return: st，识别成功返回True，否则False。pos是缺口的左边界距离
+        :return: st，识别成功返回True，否则False。response_dict["results"]是识别结果dict
         """
         self.__download_img(bg_img_url)  # 先下载背景图片
         print("读取目标图片：")
@@ -42,11 +42,10 @@ class SliderMove(object):
         bg_img_test_url = "{}?access_token={}".format(self.model_url, self.access_token)
         response = requests.post(bg_img_test_url, json=self.params)
         response_dict = dict(response.json())
-        # response_dict = json.loads(response_json)
         if response_dict.get("results", ""):
             return True, response_dict["results"]
         else:
-            return False, 0
+            return False, {}
 
     def slider_move(self, chrome_driver, slider_element, distance):
         """
@@ -70,6 +69,11 @@ class SliderMove(object):
         ActionChains(chrome_driver).release(on_element=slider_element).perform()
 
     def __get_move_track(self, distance):
+        """
+        用于生成在distance距离下，滑块需要移动的数组的私有方法
+        :param distance: 需要移动的总距离
+        :return: tracks滑块每次移动的距离数组
+        """
         tracks = []
         v = 0
         m = 2
@@ -101,6 +105,9 @@ class SliderMove(object):
         else:
             with open(self.image_path, "wb") as f:
                 f.write(response.content)
+
+    def __del__(self):
+        os.remove(self.image_path)
 
 
 class Login(object):
@@ -170,7 +177,8 @@ class Login(object):
         # 点击登录以后，开始破解滑动验证码
         k = 1
         while k < self.retry:
-            # 取得滑动验证的背景元素和滑块元素
+            # 取得滑动验证的背景元素和滑块元素，这里直接定位这两元素会被重定向本地的随机接口，一直循环访问，使用最笨的一层一层定位
+            # 才能定位到滑动验证码的背景元素和滑块元素
             bg_img = self.wait.until(
                 Ec.presence_of_element_located((By.CSS_SELECTOR, "body > div.yidun_popup--light.yidun_popup.yidun_popup--size-small > div.yidun_modal__wrap > div > div > div.yidun_modal__body > div > div.yidun_panel > div > div.yidun_bgimg > img.yidun_bg-img"))
             )
@@ -178,13 +186,15 @@ class Login(object):
                 Ec.presence_of_element_located((By.XPATH, "/html/body/div[4]/div[2]/div/div/div[2]/div/div[1]/div/div[1]/img[2]"))
             )
             bg_img_url = bg_img.get_attribute("src")
+
+            # 获得识别结果和结果dict
             st, res = self.slider.get_distance(bg_img_url)
-            if st:
-                pos = res[0]["location"]["left"]
+            if st:  # 如果识别成功
+                pos = res[0]["location"]["left"]  # 取得识别出的区域的做边界
                 start_url = self.browser.current_url  # 滑动前当前url
-                distance = pos - 4
+                distance = pos - 4  # 滑块初始时距离整个背景图左边界有4像素，需要减去在计算移动数组
                 self.slider.slider_move(self.browser, slider_img, distance)
-                time.sleep(5)
+                time.sleep(3)
                 try:
                     submit = self.wait.until(
                         Ec.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))
@@ -194,20 +204,24 @@ class Login(object):
                 except:
                     pass
 
-                end_url = self.browser.current_url
+                end_url = self.browser.current_url  # 完成以上滑动操作后，获取现在的url
                 print(end_url)
-                if end_url != start_url:
+                if end_url != start_url:  # 如果现在url和之前的不一样，我们认为是转到的登陆成功后的界面
                     return self.__get_cookies()
-                else:
+                else:  # 否则就是登陆失败
                     k += 1
                     time.sleep(3)
-            else:
+            else:  # 如果没有识别出缺口区域，我们让滑块向前移动一小段距离，让滑动验证码自动刷新
                 self.slider.slider_move(self.browser, slider_img, 10)
                 k += 1
                 time.sleep(3)
         return None
 
     def __get_cookies(self):
+        """
+        私有方法，用于模拟登陆成功后，获得cookie值
+        :return: cookie
+        """
         cookies = self.browser.get_cookies()
         self.cookies = ""
         for cookie in cookies:

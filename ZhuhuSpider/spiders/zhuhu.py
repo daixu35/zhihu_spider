@@ -2,10 +2,12 @@ import scrapy
 
 from ZhuhuSpider.usualy.slider_login import Login
 
+
 class ZhuhuSpider(scrapy.Spider):
     name = "zhuhu"
     allowed_domains = ["www.zhihu.com"]
     start_urls = ["https://www.zhihu.com/"]
+    login_url = "https://www.zhihu.com/signin"
 
     headers = {
         "HOST": "www.zhihu.com",
@@ -18,10 +20,9 @@ class ZhuhuSpider(scrapy.Spider):
     }
 
     def start_requests(self):
-        login_url = "https://www.zhihu.com/signin"
-        user = "18811571915"
-        password = "$Dyy2010"
-        login = Login(login_url, user, password, 6)
+        user = self.settings["USER"]
+        password = self.settings["PASSWORD"]
+        login = Login(self.login_url, user, password, 6)
         cookies = login.login()
         print("获取到cookies: ", cookies)
         for url in self.start_urls:
