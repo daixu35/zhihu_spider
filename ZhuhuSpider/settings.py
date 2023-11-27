@@ -17,7 +17,7 @@ NEWSPIDER_MODULE = "ZhuhuSpider.spiders"
 #USER_AGENT = "ZhuhuSpider (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -50,9 +50,12 @@ ROBOTSTXT_OBEY = True
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    "ZhuhuSpider.middlewares.ZhuhuspiderDownloaderMiddleware": 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+   "ZhuhuSpider.middlewares.RandomUserAgentMiddleWare": 1,
+   "ZhuhuSpider.middlewares.RandomProxyMiddleware": 2,
+   "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,  # 取消scrapy源码中默认的ua middleware
+}
+# UA_TYPE = "Chrome"  # 实现自己设置想要什么样的随机UA
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html

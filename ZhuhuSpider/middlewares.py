@@ -4,6 +4,9 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+from fake_useragent import UserAgent
+
+from ZhuhuSpider.usualy.get_random_ip import ValidIp
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -101,3 +104,27 @@ class ZhuhuspiderDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
+
+
+class RandomUserAgentMiddleWare(object):
+    # 实现每一个request随机更换ua
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler)
+
+    def __init__(self, crawler):
+        super(RandomUserAgentMiddleWare, self).__init__()
+        self.ua = UserAgent()
+        self.ua_type = crawler.settings.get("UA_TYPE", "random")
+
+    def process_request(self, request, spider):
+        def random_ua():
+            return getattr(self.ua, self.ua_type)
+
+        request.headers.setdefault("User-Agent", random_ua())
+
+
+class RandomProxyMiddleware(object):
+    def process_request(self, request, spider):
+        random_ip = ValidIp()
+        request.meta["proxy"] = random_ip.get_valid_ip()

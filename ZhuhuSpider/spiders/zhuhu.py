@@ -20,13 +20,16 @@ class ZhuhuSpider(scrapy.Spider):
     }
 
     def start_requests(self):
-        user = self.settings["USER"]
-        password = self.settings["PASSWORD"]
-        login = Login(self.login_url, user, password, 6)
-        cookies = login.login()
-        print("获取到cookies: ", cookies)
+        # user = self.settings["USER"]
+        # password = self.settings["PASSWORD"]
+        # login = Login(self.login_url, user, password, 6)
+        # cookies = login.login()
+        # print("获取到cookies: ", cookies)
+        # for url in self.start_urls:
+        #     yield scrapy.Request(url, headers=self.headers, cookies=cookies, callback=self.parse)
+
         for url in self.start_urls:
-            yield scrapy.Request(url, headers=self.headers, cookies=cookies, callback=self.parse)
+            yield scrapy.Request(url, headers=self.headers, callback=self.parse)
 
 
     def parse(self, response):

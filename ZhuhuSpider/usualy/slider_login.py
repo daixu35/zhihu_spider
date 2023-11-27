@@ -38,7 +38,7 @@ class SliderMove(object):
             base64_str = base64_data.decode('UTF8')
         self.params["image"] = base64_str
 
-        # 调用机器学习模型进行图像缺口识别
+        # 调用机器学习模型接口进行图像缺口识别
         bg_img_test_url = "{}?access_token={}".format(self.model_url, self.access_token)
         response = requests.post(bg_img_test_url, json=self.params)
         response_dict = dict(response.json())
@@ -178,7 +178,7 @@ class Login(object):
         k = 1
         while k < self.retry:
             # 取得滑动验证的背景元素和滑块元素，这里直接定位这两元素会被重定向本地的随机接口，一直循环访问，使用最笨的一层一层定位
-            # 才能定位到滑动验证码的背景元素和滑块元素
+            # 的方式反而能定位到滑动验证码的背景元素和滑块元素
             bg_img = self.wait.until(
                 Ec.presence_of_element_located((By.CSS_SELECTOR, "body > div.yidun_popup--light.yidun_popup.yidun_popup--size-small > div.yidun_modal__wrap > div > div > div.yidun_modal__body > div > div.yidun_panel > div > div.yidun_bgimg > img.yidun_bg-img"))
             )
