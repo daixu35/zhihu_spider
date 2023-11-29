@@ -53,6 +53,8 @@ ROBOTSTXT_OBEY = False
 DOWNLOADER_MIDDLEWARES = {
    "ZhuhuSpider.middlewares.RandomUserAgentMiddleWare": 1,
    "ZhuhuSpider.middlewares.RandomProxyMiddleware": 2,
+   "ZhuhuSpider.middlewares.DynamicPageMiddleware": 3,
+   # "ZhuhuSpider.middlewares.InterceptionAjaxMiddleware": 4,
    "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,  # 取消scrapy源码中默认的ua middleware
 }
 # UA_TYPE = "Chrome"  # 实现自己设置想要什么样的随机UA
@@ -65,9 +67,11 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "ZhuhuSpider.pipelines.ZhuhuspiderPipeline": 300,
-#}
+ITEM_PIPELINES = {
+   "ZhuhuSpider.pipelines.ZhihuQuestionItemPipline": 1,
+   "ZhuhuSpider.pipelines.ZhihuAnswerItemPipline": 2,
+   "ZhuhuSpider.pipelines.ZhuhuspiderPipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -95,5 +99,13 @@ REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
-USER = "******"
+USER = "*******"
 PASSWORD = "*******"
+
+INTERCEPT_PROXY_PATH = "E:\project\ZhuhuSpider\\browsermob-proxy-2.1.4\\bin\\browsermob-proxy"
+
+MYSQL_HOST = "127.0.0.1"
+MYSQL_DBNAME = "article_spider"
+MYSQL_USER = "root"
+MYSQL_PASSWORD = "123456"
+

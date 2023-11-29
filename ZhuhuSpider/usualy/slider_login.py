@@ -75,7 +75,7 @@ class SliderMove(object):
         :return: tracks滑块每次移动的距离数组
         """
         tracks = []
-        v = 0
+        v = 1.5
         m = 2
         current = 0
         mid = distance * 4 / 5
@@ -223,9 +223,6 @@ class Login(object):
         :return: cookie
         """
         cookies = self.browser.get_cookies()
-        self.cookies = ""
-        for cookie in cookies:
-            self.cookies += '{}={};'.format(cookie.get('name'), cookie.get('value'))
         return cookies
 
     def __del__(self):
